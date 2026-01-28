@@ -1,0 +1,196 @@
+/* ================================
+   GLOBAL THEME – FINAL POLISH
+================================ */
+
+:root {
+    --purple-main: #6C4DFF;
+    --purple-dark: #4B2FDB;
+    --purple-light: #8F7BFF;
+    --gradient-main: linear-gradient(135deg, #6C4DFF, #8F7BFF);
+    --text-dark: #111827;
+    --text-muted: #6B7280;
+    --bg-light: #FFFFFF;
+    --bg-soft: #F9FAFB;
+    --border-soft: #E5E7EB;
+}
+
+/* RESET & BASE */
+* {
+    box-sizing: border-box;
+    font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: var(--bg-light);
+    color: var(--text-dark);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* LINKS */
+a {
+    color: var(--purple-main);
+    text-decoration: none;
+}
+
+a:hover {
+    opacity: 0.9;
+}
+
+/* ================================
+   BUTTONS
+================================ */
+
+.btn-primary {
+    background: var(--gradient-main);
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 10px 30px rgba(108,77,255,0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 40px rgba(108,77,255,0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-outline {
+    background: #fff;
+    color: var(--purple-main);
+    border: 2px solid var(--purple-main);
+    padding: 12px 26px;
+    border-radius: 14px;
+    font-weight: 600;
+    transition: background 0.15s ease;
+}
+
+.btn-outline:hover {
+    background: #EEF2FF;
+}
+
+/* ================================
+   NAVBAR
+================================ */
+
+.navbar {
+    background: #fff;
+    border-bottom: 1px solid var(--border-soft);
+    padding: 18px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar .brand {
+    font-size: 22px;
+    font-weight: 700;
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.navbar a {
+    color: var(--text-muted);
+    margin-left: 24px;
+    font-weight: 500;
+}
+
+.navbar a:hover {
+    color: var(--purple-main);
+}
+
+/* ================================
+   CARDS
+================================ */
+
+.card,
+.stat-card,
+.metric-card,
+.action-box,
+.result-card,
+.notification,
+.form-card,
+.chat-wrapper {
+    border-radius: 20px;
+}
+
+/* ================================
+   FORMS
+================================ */
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    font-size: 14px;
+    transition: border 0.15s ease, box-shadow 0.15s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #9CA3AF;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--purple-main);
+    box-shadow: 0 0 0 3px rgba(108,77,255,0.15);
+}
+
+/* ================================
+   BADGES & STATUS
+================================ */
+
+.status {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status.lost {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.status.found {
+    background: #DCFCE7;
+    color: #065F46;
+}
+
+/* ================================
+   RESPONSIVE (BASIC)
+================================ */
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 15px 20px;
+    }
+
+    .navbar a {
+        margin-left: 14px;
+    }
+
+    .btn-primary,
+    .btn-outline {
+        width: 100%;
+    }
+}
