@@ -14,7 +14,7 @@ $sql = "SELECT * FROM items WHERE status != 'closed'";
 $params = [];
 
 if ($query) {
-    $sql .= " AND (item_name LIKE ? OR description LIKE ? OR location LIKE ?)";
+    $sql .= " AND (title LIKE ? OR description LIKE ? OR location LIKE ?)";
     $term = "%$query%";
     $params[] = $term;
     $params[] = $term;
@@ -43,7 +43,7 @@ if (empty($query) && empty($category)) {
     // Only run this if not actively searching, to avoid clutter
     try {
         // Find my lost items
-        $myLost = $pdo->prepare("SELECT category, item_name FROM items WHERE user_id = ? AND type = 'lost' AND status = 'open' LIMIT 3");
+        $myLost = $pdo->prepare("SELECT category, title FROM items WHERE user_id = ? AND type = 'lost' AND status = 'open' LIMIT 3");
         $myLost->execute([$_SESSION['user_id']]);
         $lostItems = $myLost->fetchAll();
         
@@ -230,7 +230,7 @@ if (empty($query) && empty($category)) {
                             <div class="card-type"><span class="badge badge-found">MATCH?</span></div>
                         </div>
                         <div class="card-content">
-                            <div class="card-title"><?= htmlspecialchars($item['item_name']) ?></div>
+                            <div class="card-title"><?= htmlspecialchars($item['title']) ?></div>
                             <div class="card-meta"><span>📍 <?= htmlspecialchars($item['location']) ?></span></div>
                             <a href="item.php?id=<?= $item['id'] ?>" class="btn-details">View Details</a>
                         </div>
@@ -276,7 +276,7 @@ if (empty($query) && empty($category)) {
                     </div>
                     
                     <div class="card-content">
-                        <div class="card-title"><?= htmlspecialchars($item['item_name']) ?></div>
+                        <div class="card-title"><?= htmlspecialchars($item['title']) ?></div>
                         <div class="card-meta">
                             <span>📍 <?= htmlspecialchars($item['location']) ?></span>
                         </div>
