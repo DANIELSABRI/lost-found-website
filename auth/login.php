@@ -28,34 +28,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Invalid email or password.';
         } else {
 
-            // ✅ ADMIN → PLAIN PASSWORD (DEV MODE)
-            if ($user['role'] === 'admin') {
+            if (!password_verify($password, $user['password'])) {
+                $error = 'Invalid email or password.';
+            } else {
+                $_SESSION['user_id']   = $user['id'];
+                $_SESSION['user_name'] = $user['name'];
+                $_SESSION['user_role'] = $user['role'];
 
-                if ($password !== $user['password']) {
-                    $error = 'Invalid email or password.';
+                // Role-based redirection
+                if ($user['role'] === 'admin') {
+                    header('Location: ' . BASE_URL . '/admin/dashboard.php');
                 } else {
-                    $_SESSION['user_id']   = $user['id'];
-                    $_SESSION['user_name'] = $user['name'];
-                    $_SESSION['user_role'] = 'admin';
-
-                    header('Location: ../admin/dashboard.php');
-                    exit;
+                    header('Location: ' . BASE_URL . '/user/dashboard.php');
                 }
-
-            } 
-            // ✅ USERS → HASHED PASSWORD
-            else {
-
-                if (!password_verify($password, $user['password'])) {
-                    $error = 'Invalid email or password.';
-                } else {
-                    $_SESSION['user_id']   = $user['id'];
-                    $_SESSION['user_name'] = $user['name'];
-                    $_SESSION['user_role'] = 'user';
-
-                    header('Location: ../user/dashboard.php');
-                    exit;
-                }
+                exit;
             }
         }
     }
@@ -65,99 +51,176 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Login | Lost & Found</title>
+<title>Secure Access | Lost & Found Intelligence</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/theme.css" rel="stylesheet">
 
 <style>
-body{
-    margin:0;
-    min-height:100vh;
-    background:linear-gradient(135deg,#5b3df5,#7c6cff);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-}
-.card{
-    width:100%;
-    max-width:420px;
-    background:#fff;
-    padding:32px;
-    border-radius:16px;
-    box-shadow:0 20px 40px rgba(0,0,0,.15);
-}
-h1{margin:0 0 6px;font-size:28px;}
-h1 span{color:#6b5cff;}
-p{margin:0 0 20px;color:#555;}
-.error{
-    background:#fde2e2;
-    color:#b42318;
-    padding:12px;
-    border-radius:8px;
-    margin-bottom:16px;
-    font-size:14px;
-}
-label{display:block;margin-bottom:6px;font-weight:500;}
-input{
-    width:100%;
-    padding:12px;
-    border-radius:8px;
-    border:1px solid #ddd;
-    margin-bottom:16px;
-    font-size:15px;
-}
-input:focus{outline:none;border-color:#6b5cff;}
-button{
-    width:100%;
-    padding:12px;
-    background:#6b5cff;
-    color:#fff;
-    border:none;
-    border-radius:10px;
-    font-size:16px;
-    font-weight:600;
-    cursor:pointer;
-}
-button:hover{background:#5848e5;}
-.switch{
-    margin-top:16px;
-    text-align:center;
-    font-size:14px;
-}
-.switch a{
-    color:#6b5cff;
-    font-weight:600;
-    text-decoration:none;
-}
-.switch a:hover{text-decoration:underline;}
-</style>
-</head>
+    body {
+        margin: 0;
+        min-height: 100vh;
+        overflow: hidden;
+        font-family: 'Poppins', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
+    /* Dynamic Background Slider */
+    .bg-slider {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        z-index: -1;
+    }
+    .bg-slide {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 1.5s ease-in-out;
+    }
+    .bg-slide.active { opacity: 1; }
+    .bg-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(circle, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
+    }
+
+    /* Back Logo */
+    .back-logo {
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 15vw;
+        font-weight: 900;
+        color: rgba(255,255,255,0.03);
+        z-index: 0;
+        white-space: nowrap;
+        pointer-events: none;
+        text-transform: uppercase;
+        letter-spacing: -10px;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 480px;
+        position: relative;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 60px;
+        border-radius: var(--radius-3xl);
+        box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+        color: #fff;
+    }
+
+    h1 { font-size: 36px; font-weight: 800; margin-bottom: 10px; letter-spacing: -1px; }
+    h1 span { background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    p { opacity: 0.6; margin-bottom: 40px; font-size: 14px; font-weight: 500; }
+
+    .form-group { margin-bottom: 25px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; color: rgba(255,255,255,0.6); }
+    .form-control {
+        background: rgba(255,255,255,0.05);
+        border: 2px solid rgba(255,255,255,0.1);
+        color: #fff;
+        padding: 16px 20px;
+        border-radius: 12px;
+        width: 100%;
+        font-family: inherit;
+        font-size: 15px;
+        transition: 0.3s;
+    }
+    .form-control:focus { outline: none; border-color: var(--color-primary); background: rgba(255,255,255,0.08); }
+
+    .error-box {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+        padding: 15px;
+        border-radius: 12px;
+        font-size: 13px;
+        margin-bottom: 25px;
+        font-weight: 600;
+    }
+
+    .btn-auth {
+        width: 100%;
+        padding: 18px;
+        background: var(--grad-primary);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.3s;
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+    .btn-auth:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4); }
+
+    .auth-footer { margin-top: 30px; text-align: center; font-size: 14px; opacity: 0.6; }
+    .auth-footer a { color: #fff; font-weight: 700; text-decoration: none; }
+    .auth-footer a:hover { text-decoration: underline; }
+</style>
+
+</head>
 <body>
 
-<div class="card">
-<h1>Login <span>Account</span></h1>
-<p>Access the Lost & Found system.</p>
+    <!-- DYNAMIC BACKGROUND -->
+    <div class="bg-slider">
+        <div class="bg-slide active" style="background-image: url('<?= BASE_URL ?>/assets/img/auth/bg1.png');"></div>
+        <div class="bg-slide" style="background-image: url('<?= BASE_URL ?>/assets/img/auth/bg2.png');"></div>
+        <div class="bg-slide" style="background-image: url('<?= BASE_URL ?>/assets/img/auth/bg3.png');"></div>
+        <div class="bg-overlay"></div>
+    </div>
 
-<?php if ($error): ?>
-<div class="error"><?= htmlspecialchars($error) ?></div>
-<?php endif; ?>
+    <!-- BACKGROUND LOGO -->
+    <div class="back-logo">Lost & Found</div>
 
-<form method="POST">
-<label>Email</label>
-<input type="email" name="email" required>
+    <div class="auth-card">
+        <h1>Login <span>Intelligence</span></h1>
+        <p>Command center access for verified campus members.</p>
 
-<label>Password</label>
-<input type="password" name="password" required>
+        <?php if ($error): ?>
+            <div class="error-box">⚠️ Clearance Denied: <?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
 
-<button type="submit">Login</button>
-</form>
+        <form method="POST">
+            <div class="form-group">
+                <label>Security Email</label>
+                <input type="email" name="email" class="form-control" placeholder="staff.student@campus.edu" required autofocus>
+            </div>
 
-<div class="switch">
-Don’t have an account?
-<a href="register.php">Register here</a>
-</div>
-</div>
+            <div class="form-group">
+                <label>Access Key</label>
+                <input type="password" name="password" class="form-control" placeholder="••••••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-auth">Initialize Session</button>
+        </form>
+
+        <div class="auth-footer">
+            No credentials? <a href="register.php">Register Identity</a>
+        </div>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.bg-slide');
+        let currentSlide = 0;
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        setInterval(nextSlide, 5000);
+    </script>
 
 </body>
 </html>
