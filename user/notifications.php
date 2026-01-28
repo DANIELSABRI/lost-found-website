@@ -134,6 +134,10 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
         border-radius: var(--radius-3xl);
         border: 2px dashed #e2e8f0;
     }
+
+    /* Layout Shim */
+    .dashboard-layout { display: grid; grid-template-columns: 1fr 300px; gap: 30px; margin-top: 40px; }
+    @media (max-width: 900px) { .dashboard-layout { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -152,52 +156,75 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </nav>
 
 <div class="container">
-    <div class="pulse-container">
-        
-        <div class="pulse-header">
-            <div class="page-intro" style="text-align: left; margin: 0;">
-                <h1>Intelligence <span style="color: var(--color-primary);">Pulse</span></h1>
-                <p>Stay updated on item matches, security alerts, and system movements.</p>
-            </div>
-            <?php if (!empty($notifications)): ?>
-                <a href="?read_all=1" class="btn-primary" style="padding: 12px 25px; font-size: 13px;">Clear All Sentry</a>
-            <?php endif; ?>
-        </div>
-
-        <div class="pulse-feed">
-            <?php if (empty($notifications)): ?>
-                <div class="empty-pulse">
-                    <span style="font-size: 60px;">📡</span>
-                    <h2 style="margin-top: 20px; font-weight: 800;">No Signal Detected</h2>
-                    <p style="color: var(--color-text-muted); margin-top: 10px;">Your intelligence feed is clear. We'll alert you if the network detects a match.</p>
-                </div>
-            <?php else: ?>
-                <?php foreach ($notifications as $n): ?>
-                    <?php 
-                        $iconClass = 'icon-system'; $icon = '📢';
-                        if ($n['type'] === 'match') { $iconClass = 'icon-match'; $icon = '✨'; }
-                        if ($n['type'] === 'security') { $iconClass = 'icon-security'; $icon = '🛡️'; }
-                        if ($n['type'] === 'message') { $iconClass = 'icon-message'; $icon = '💬'; }
-                    ?>
-                    <div class="pulse-item <?= !$n['is_read'] ? 'unread' : '' ?>">
-                        <div class="pulse-icon-wrap <?= $iconClass ?>">
-                            <?= $icon ?>
-                        </div>
-                        <div class="pulse-content" style="flex: 1;">
-                            <h4><?= htmlspecialchars($n['title']) ?></h4>
-                            <p><?= htmlspecialchars($n['body']) ?></p>
-                            <div class="pulse-time"><?= date('F j, Y • g:i a', strtotime($n['created_at'])) ?></div>
-                        </div>
-                        <?php if (!$n['is_read']): ?>
-                            <div style="display: flex; align-items: center;">
-                                <a href="?read=<?= $n['id'] ?>" class="btn-action btn-mark-read">Acknowledge</a>
-                            </div>
-                        <?php endif; ?>
+    <div class="dashboard-layout">
+        <!-- Main Notifications Content -->
+        <main>
+            <div class="pulse-container" style="max-width: 100%;">
+                
+                <div class="pulse-header" style="margin-bottom: 30px;">
+                    <div class="page-intro" style="text-align: left; margin: 0;">
+                        <h1>Intelligence <span style="color: var(--color-primary);">Pulse</span></h1>
+                        <p>Stay updated on item matches, security alerts, and system movements.</p>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
+                    <?php if (!empty($notifications)): ?>
+                        <a href="?read_all=1" class="btn-primary" style="padding: 12px 25px; font-size: 13px;">Clear All Sentry</a>
+                    <?php endif; ?>
+                </div>
 
+                <div class="pulse-feed">
+                    <?php if (empty($notifications)): ?>
+                        <div class="empty-pulse">
+                            <span style="font-size: 60px;">📡</span>
+                            <h2 style="margin-top: 20px; font-weight: 800;">No Signal Detected</h2>
+                            <p style="color: var(--color-text-muted); margin-top: 10px;">Your intelligence feed is clear. We'll alert you if the network detects a match.</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($notifications as $n): ?>
+                            <?php 
+                                $iconClass = 'icon-system'; $icon = '📢';
+                                if ($n['type'] === 'match') { $iconClass = 'icon-match'; $icon = '✨'; }
+                                if ($n['type'] === 'security') { $iconClass = 'icon-security'; $icon = '🛡️'; }
+                                if ($n['type'] === 'message') { $iconClass = 'icon-message'; $icon = '💬'; }
+                            ?>
+                            <div class="pulse-item <?= !$n['is_read'] ? 'unread' : '' ?>">
+                                <div class="pulse-icon-wrap <?= $iconClass ?>">
+                                    <?= $icon ?>
+                                </div>
+                                <div class="pulse-content" style="flex: 1;">
+                                    <h4><?= htmlspecialchars($n['title']) ?></h4>
+                                    <p><?= htmlspecialchars($n['body']) ?></p>
+                                    <div class="pulse-time"><?= date('F j, Y • g:i a', strtotime($n['created_at'])) ?></div>
+                                </div>
+                                <?php if (!$n['is_read']): ?>
+                                    <div style="display: flex; align-items: center;">
+                                        <a href="?read=<?= $n['id'] ?>" class="btn-action btn-mark-read">Acknowledge</a>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Sidebar -->
+        <aside>
+            <div class="sidebar-block" style="background: var(--grad-dark); border: none; color: #fff;">
+                <h3 style="color: #fff; margin-bottom: 20px;">Command Hub</h3>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a href="dashboard.php" style="background: rgba(255,255,255,0.08); padding: 15px 20px; border-radius: 12px; text-decoration: none; color: #fff; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: 600; font-size: 13px;">◄ Return to Dashboard</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="glass-card" style="padding: 30px; text-align: center;">
+                <span style="font-size: 32px;">🔔</span>
+                <h5 style="margin-top: 15px; font-weight: 800;">Real-time Ops</h5>
+                <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">Notifications are synchronized with campus security logs.</p>
+            </div>
+        </aside>
     </div>
 </div>
 

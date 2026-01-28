@@ -83,6 +83,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['my_item_id'])) {
     .candidate-item:hover { border-color: var(--color-primary); background: #f8f9ff; }
     .candidate-item input { width: 20px; height: 20px; accent-color: var(--color-primary); }
     .btn-submit { width: 100%; margin-top: 20px; padding: 15px; font-size: 16px; }
+
+    /* Layout Shim */
+    .dashboard-layout { display: grid; grid-template-columns: 1fr 300px; gap: 30px; margin-top: 40px; }
+    @media (max-width: 900px) { .dashboard-layout { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -90,32 +94,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['my_item_id'])) {
         <a href="<?= BASE_URL ?>/index.php" class="nav-brand">Lost & Found</a>
     </nav>
 
-    <div class="match-container">
-        <h2 style="margin-bottom: 20px;">Propose a Match</h2>
-        <p>You are viewing: <strong><?= htmlspecialchars($targetInfo['item_name']) ?></strong> (<?= strtoupper($targetInfo['type']) ?>)</p>
-        <p style="color: var(--color-text-gray); font-size: 14px;">Select one of your <strong><?= strtoupper($neededType) ?></strong> items to propose a match:</p>
-        
-        <?php if (empty($myCandidates)): ?>
-            <div style="padding: 30px; text-align: center; background: #f8f9fa; border-radius: 10px; margin-top: 20px;">
-                <p>You don't have any open <?= $neededType ?> items to match.</p>
-                <a href="report-<?= $neededType ?>.php" class="btn-primary" style="display:inline-block; margin-top:10px;">Report <?= ucfirst($neededType) ?> Item</a>
-            </div>
-        <?php else: ?>
-            <form method="POST">
-                <div class="candidate-list">
-                    <?php foreach ($myCandidates as $cand): ?>
-                        <label class="candidate-item">
-                            <input type="radio" name="my_item_id" value="<?= $cand['id'] ?>" required>
-                            <div>
-                                <strong><?= htmlspecialchars($cand['item_name']) ?></strong>
-                                <div style="font-size: 12px; color: gray;"><?= htmlspecialchars($cand['location']) ?> • <?= htmlspecialchars($cand['status']) ?></div>
+    <div class="container">
+        <div class="dashboard-layout">
+            <main>
+                <div class="match-container" style="max-width: 100%; margin: 0; box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.02);">
+                    <div style="border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; margin-bottom: 20px;">
+                         <h2 style="margin-bottom: 10px; font-weight: 800;">Propose a Match</h2>
+                         <p style="color: var(--color-text-muted);">Identify the counterpart to this item from your reports.</p>
+                    </div>
+
+                    <div style="background: #f8f9ff; border: 1px solid #e0e7ff; padding: 20px; border-radius: 15px; margin-bottom: 30px;">
+                        <p style="font-size: 12px; font-weight: 700; color: var(--color-primary); text-transform: uppercase; margin-bottom: 5px;">Target Item</p>
+                        <strong style="font-size: 18px;"><?= htmlspecialchars($targetInfo['item_name']) ?></strong> 
+                        <span style="font-size: 12px; background: <?= $targetInfo['type'] == 'lost' ? '#fee2e2' : '#d1fae5' ?>; color: <?= $targetInfo['type'] == 'lost' ? '#dc2626' : '#059669' ?>; padding: 4px 8px; border-radius: 6px; margin-left: 10px; font-weight: 800;"><?= strtoupper($targetInfo['type']) ?></span>
+                    </div>
+
+                    <p style="color: var(--color-text-gray); font-size: 14px; margin-bottom: 15px;">Select one of your <strong><?= strtoupper($neededType) ?></strong> items to propose a match:</p>
+                    
+                    <?php if (empty($myCandidates)): ?>
+                        <div style="padding: 40px; text-align: center; background: #fff; border: 2px dashed #e2e8f0; border-radius: 15px;">
+                            <span style="font-size: 40px; display:block; margin-bottom:10px;">📂</span>
+                            <p style="font-weight: 600;">No candiate items found.</p>
+                            <p style="font-size: 13px; color: gray; margin-bottom: 20px;">You don't have any open "<?= $neededType ?>" items to match against this report.</p>
+                            <a href="report-<?= $neededType ?>.php" class="btn-primary" style="display:inline-block;">Report <?= ucfirst($neededType) ?> Item</a>
+                        </div>
+                    <?php else: ?>
+                        <form method="POST">
+                            <div class="candidate-list">
+                                <?php foreach ($myCandidates as $cand): ?>
+                                    <label class="candidate-item">
+                                        <input type="radio" name="my_item_id" value="<?= $cand['id'] ?>" required>
+                                        <div>
+                                            <strong><?= htmlspecialchars($cand['item_name']) ?></strong>
+                                            <div style="font-size: 12px; color: gray;"><?= htmlspecialchars($cand['location']) ?> • <?= htmlspecialchars($cand['status']) ?></div>
+                                        </div>
+                                    </label>
+                                <?php endforeach; ?>
                             </div>
-                        </label>
-                    <?php endforeach; ?>
+                            <button type="submit" class="btn-primary btn-submit" style="margin-top: 30px;">Confirm Match Proposal</button>
+                        </form>
+                    <?php endif; ?>
                 </div>
-                <button type="submit" class="btn-primary btn-submit">Propose Match</button>
-            </form>
-        <?php endif; ?>
+            </main>
+
+            <!-- Sidebar -->
+            <aside>
+                <div class="sidebar-block" style="background: var(--grad-dark); border: none; color: #fff;">
+                    <h3 style="color: #fff; margin-bottom: 20px;">Command Hub</h3>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <a href="dashboard.php" style="background: rgba(255,255,255,0.08); padding: 15px 20px; border-radius: 12px; text-decoration: none; color: #fff; display: flex; align-items: center; justify-content: space-between;">
+                            <span style="font-weight: 600; font-size: 13px;">◄ Return to Dashboard</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="glass-card" style="padding: 30px; text-align: center;">
+                    <span style="font-size: 32px;">🔗</span>
+                    <h5 style="margin-top: 15px; font-weight: 800;">Match Protocol</h5>
+                    <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">Proposing a match notifies the other party instantly for confirmation.</p>
+                </div>
+            </aside>
+        </div>
     </div>
 </body>
 </html>

@@ -136,6 +136,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .alert-error { background: #FEF2F2; color: #B91C1C; }
 
     @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+
+    /* Layout Shim */
+    .dashboard-layout { display: grid; grid-template-columns: 1fr 300px; gap: 30px; margin-top: 40px; }
+    @media (max-width: 900px) { .dashboard-layout { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>

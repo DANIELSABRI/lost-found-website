@@ -198,6 +198,10 @@ if ($active_item_id && $active_peer_id) {
         background: var(--grad-primary); color: #fff; border: none; width: 50px; height: 50px; border-radius: 16px; cursor: pointer;
         display: flex; align-items: center; justify-content: center; font-size: 20px; transition: 0.3s;
     }
+
+    /* Layout Shim */
+    .dashboard-layout { display: grid; grid-template-columns: 1fr 300px; gap: 30px; margin-top: 40px; }
+    @media (max-width: 1200px) { .dashboard-layout { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -220,89 +224,112 @@ if ($active_item_id && $active_peer_id) {
         <p>Coordinate recovery missions through verified campus intelligence channels.</p>
     </div>
 
-    <div class="chat-wrapper">
-        <!-- Sidebar -->
-        <div class="chat-sidebar">
-            <div class="sidebar-header">
-                <h3>Intelligence Feed</h3>
-            </div>
-            <div class="conv-list">
-                <?php if (empty($conversations)): ?>
-                    <div style="text-align: center; padding: 60px 40px;">
-                        <span style="font-size: 50px;">🧊</span>
-                        <p style="font-size: 13px; color: var(--color-text-muted); margin-top: 15px; font-weight: 500;">No active channels. Select an item from the dashboard to start a relay.</p>
+    <div class="dashboard-layout">
+        <!-- Main Chat Interface -->
+        <main>
+            <div class="chat-wrapper" style="height: 700px; border: 1px solid rgba(0,0,0,0.08); box-shadow: var(--shadow-md);">
+                <!-- Sidebar -->
+                <div class="chat-sidebar">
+                    <div class="sidebar-header">
+                        <h3>Intelligence Feed</h3>
                     </div>
-                <?php else: ?>
-                    <?php foreach ($conversations as $c): ?>
-                        <a href="?item_id=<?= $c['item_id'] ?>&peer_id=<?= $c['peer_id'] ?>" 
-                           class="conv-item <?= ($active_item_id == $c['item_id'] && $active_peer_id == $c['peer_id']) ? 'active' : '' ?>">
-                            <div class="peer-avatar" style="<?= $c['last_msg'] === 'Pending Investigation...' ? 'opacity: 0.6;' : '' ?>">
-                                <?= strtoupper(substr($c['peer_name'],0,1)) ?>
+                    <div class="conv-list">
+                        <?php if (empty($conversations)): ?>
+                            <div style="text-align: center; padding: 60px 40px;">
+                                <span style="font-size: 50px;">🧊</span>
+                                <p style="font-size: 13px; color: var(--color-text-muted); margin-top: 15px; font-weight: 500;">No active channels. Select an item from the dashboard to start a relay.</p>
                             </div>
-                            <div class="conv-info">
-                                <span class="item-name"><?= htmlspecialchars($c['item_name']) ?></span>
-                                <span class="peer-name"><?= htmlspecialchars($c['peer_name']) ?></span>
-                                <span class="preview"><?= htmlspecialchars($c['last_msg']) ?></span>
-                            </div>
-                        </a>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <!-- Chat Area -->
-        <div class="chat-main">
-            <?php if ($active_item_id && $active_peer_id): ?>
-                <div class="chat-main-header">
-                    <div class="active-info">
-                        <h4><?= htmlspecialchars($active_peer_name) ?></h4>
-                        <span class="active-meta">Mission Protocol: <?= htmlspecialchars($active_item_title) ?></span>
+                        <?php else: ?>
+                            <?php foreach ($conversations as $c): ?>
+                                <a href="?item_id=<?= $c['item_id'] ?>&peer_id=<?= $c['peer_id'] ?>" 
+                                   class="conv-item <?= ($active_item_id == $c['item_id'] && $active_peer_id == $c['peer_id']) ? 'active' : '' ?>">
+                                    <div class="peer-avatar" style="<?= $c['last_msg'] === 'Pending Investigation...' ? 'opacity: 0.6;' : '' ?>">
+                                        <?= strtoupper(substr($c['peer_name'],0,1)) ?>
+                                    </div>
+                                    <div class="conv-info">
+                                        <span class="item-name"><?= htmlspecialchars($c['item_name']) ?></span>
+                                        <span class="peer-name"><?= htmlspecialchars($c['peer_name']) ?></span>
+                                        <span class="preview"><?= htmlspecialchars($c['last_msg']) ?></span>
+                                    </div>
+                                </a>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
-                    <div class="badge status-matched" style="font-weight: 800; font-size: 10px;">SECURE RELAY</div>
                 </div>
 
-                <div class="msg-list" id="msgScroll">
-                    <?php if (empty($messages)): ?>
-                        <div style="margin: auto; text-align: center; max-width: 300px;">
-                            <span style="font-size: 40px;">📡</span>
-                            <h3 style="font-weight: 800; margin-top: 20px;">Initialize Communications</h3>
-                            <p style="font-size: 13px; color: var(--color-text-muted); line-height: 1.6; margin-top: 10px;">
-                                You are opening a secure channel with <strong><?= htmlspecialchars($active_peer_name) ?></strong> regarding the <strong><?= htmlspecialchars($active_item_title) ?></strong>.
-                            </p>
+                <!-- Chat Area -->
+                <div class="chat-main">
+                    <?php if ($active_item_id && $active_peer_id): ?>
+                        <div class="chat-main-header">
+                            <div class="active-info">
+                                <h4><?= htmlspecialchars($active_peer_name) ?></h4>
+                                <span class="active-meta">Mission Protocol: <?= htmlspecialchars($active_item_title) ?></span>
+                            </div>
+                            <div class="badge status-matched" style="font-weight: 800; font-size: 10px;">SECURE RELAY</div>
+                        </div>
+
+                        <div class="msg-list" id="msgScroll">
+                            <?php if (empty($messages)): ?>
+                                <div style="margin: auto; text-align: center; max-width: 300px;">
+                                    <span style="font-size: 40px;">📡</span>
+                                    <h3 style="font-weight: 800; margin-top: 20px;">Initialize Communications</h3>
+                                    <p style="font-size: 13px; color: var(--color-text-muted); line-height: 1.6; margin-top: 10px;">
+                                        You are opening a secure channel with <strong><?= htmlspecialchars($active_peer_name) ?></strong> regarding the <strong><?= htmlspecialchars($active_item_title) ?></strong>.
+                                    </p>
+                                </div>
+                            <?php else: ?>
+                                <?php foreach ($messages as $m): ?>
+                                    <div class="msg-bubble <?= $m['sender_id'] == $user_id ? 'msg-sent' : 'msg-received' ?>">
+                                        <?= htmlspecialchars($m['message']) ?>
+                                        <span class="msg-time"><?= date('g:i A', strtotime($m['created_at'])) ?></span>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="chat-footer">
+                            <form method="POST">
+                                <input type="hidden" name="send_msg" value="1">
+                                <input type="hidden" name="item_id" value="<?= $active_item_id ?>">
+                                <input type="hidden" name="receiver_id" value="<?= $active_peer_id ?>">
+                                <div class="input-wrap">
+                                    <input type="text" name="message" placeholder="Initialize message relay..." autocomplete="off" required autofocus>
+                                    <button type="submit" class="btn-send">🚀</button>
+                                </div>
+                            </form>
                         </div>
                     <?php else: ?>
-                        <?php foreach ($messages as $m): ?>
-                            <div class="msg-bubble <?= $m['sender_id'] == $user_id ? 'msg-sent' : 'msg-received' ?>">
-                                <?= htmlspecialchars($m['message']) ?>
-                                <span class="msg-time"><?= date('g:i A', strtotime($m['created_at'])) ?></span>
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; padding: 40px;">
+                            <div>
+                                <span style="font-size: 80px;">📂</span>
+                                <h2 style="font-weight: 900; margin-top: 25px; letter-spacing: -1px;">Select Intelligence Stream</h2>
+                                <p style="color: var(--color-text-muted); max-width: 400px; margin: 15px auto; font-weight: 500;">
+                                    Your correspondence is grouped by recovery asset. Select a mission from the intelligence feed to view secure logs.
+                                </p>
                             </div>
-                        <?php endforeach; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
+            </div>
+        </main>
 
-                <div class="chat-footer">
-                    <form method="POST">
-                        <input type="hidden" name="send_msg" value="1">
-                        <input type="hidden" name="item_id" value="<?= $active_item_id ?>">
-                        <input type="hidden" name="receiver_id" value="<?= $active_peer_id ?>">
-                        <div class="input-wrap">
-                            <input type="text" name="message" placeholder="Initialize message relay..." autocomplete="off" required autofocus>
-                            <button type="submit" class="btn-send">🚀</button>
-                        </div>
-                    </form>
+        <!-- Sidebar -->
+        <aside>
+            <div class="sidebar-block" style="background: var(--grad-dark); border: none; color: #fff;">
+                <h3 style="color: #fff; margin-bottom: 20px;">Command Hub</h3>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a href="dashboard.php" style="background: rgba(255,255,255,0.08); padding: 15px 20px; border-radius: 12px; text-decoration: none; color: #fff; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: 600; font-size: 13px;">◄ Return to Dashboard</span>
+                    </a>
                 </div>
-            <?php else: ?>
-                <div style="flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; padding: 40px;">
-                    <div>
-                        <span style="font-size: 80px;">📂</span>
-                        <h2 style="font-weight: 900; margin-top: 25px; letter-spacing: -1px;">Select Intelligence Stream</h2>
-                        <p style="color: var(--color-text-muted); max-width: 400px; margin: 15px auto; font-weight: 500;">
-                            Your correspondence is grouped by recovery asset. Select a mission from the intelligence feed to view secure logs.
-                        </p>
-                    </div>
-                </div>
-            <?php endif; ?>
-        </div>
+            </div>
+
+            <div class="glass-card" style="padding: 30px; text-align: center;">
+                <span style="font-size: 32px;">🔐</span>
+                <h5 style="margin-top: 15px; font-weight: 800;">Encrypted Channel</h5>
+                <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">All communications are logged for campus security and audit purposes.</p>
+            </div>
+        </aside>
     </div>
 </div>
 

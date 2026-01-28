@@ -191,6 +191,10 @@ $socials = json_decode($user['social_links'] ?? '{}', true);
         .profile-card { grid-template-columns: 1fr; }
         .profile-sidebar { border-right: none; border-bottom: 1px solid var(--color-bg); }
     }
+
+    /* Layout Shim */
+    .dashboard-layout { display: grid; grid-template-columns: 1fr 300px; gap: 30px; margin-top: 40px; }
+    @media (max-width: 1200px) { .dashboard-layout { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -218,122 +222,145 @@ $socials = json_decode($user['social_links'] ?? '{}', true);
         </div>
     <?php endif; ?>
 
-    <div class="profile-card" style="box-shadow: var(--shadow-xl); border-radius: var(--radius-3xl); overflow: hidden; border: 1px solid rgba(255,255,255,0.7);">
+    <div class="dashboard-layout">
+        <!-- Main Profile Content -->
+        <main>
+            <div class="profile-card" style="box-shadow: var(--shadow-xl); border-radius: var(--radius-3xl); overflow: hidden; border: 1px solid rgba(255,255,255,0.7); min-height: auto;">
+                <!-- Internal Profile Sidebar -->
+                <div class="profile-sidebar" style="background: rgba(248, 250, 252, 0.5); backdrop-filter: blur(5px);">
+                    <div class="avatar-wrapper">
+                        <?php if ($user['profile_pic']): ?>
+                            <img id="avatar-img" src="<?= BASE_URL ?>/uploads/profiles/<?= $user['profile_pic'] ?>" class="avatar-preview" style="border: 6px solid #fff; box-shadow: var(--shadow-lg);">
+                        <?php else: ?>
+                            <div class="avatar-preview" style="background: var(--grad-primary); border: 6px solid #fff; box-shadow: var(--shadow-lg);"><?= strtoupper(substr($user['name'],0,1)) ?></div>
+                        <?php endif; ?>
+                        
+                        <form id="pic-form" method="POST" enctype="multipart/form-data">
+                            <label class="upload-btn" style="background: var(--color-primary); box-shadow: var(--shadow-md);">
+                                📸
+                                <input type="file" name="profile_pic" hidden onchange="document.getElementById('pic-form').submit()">
+                            </label>
+                        </form>
+                    </div>
+                    
+                    <h2 style="font-size: 26px; font-weight: 800; letter-spacing: -1px; color: var(--color-text-main);"><?= htmlspecialchars($user['name']) ?></h2>
+                    <div class="badge status-matched" style="margin-top: 10px; font-weight: 800;"><?= strtoupper($user['role']) ?></div>
+                    
+                    <div style="margin-top: 25px; background: #fff; padding: 20px; border-radius: var(--radius-xl); border: 1px solid rgba(0,0,0,0.03); text-align: left;">
+                        <p style="color: var(--color-text-muted); font-size: 13px; line-height: 1.6; font-weight: 500;">
+                            <?= !empty($user['bio']) ? htmlspecialchars($user['bio']) : 'No bio added yet. Tell the campus about your role and expertise.' ?>
+                        </p>
+                    </div>
+
+                    <div class="profile-nav">
+                        <div class="profile-nav-item active" onclick="showSection('personal')" style="font-size: 13px;">🛡️ Profile Metadata</div>
+                        <div class="profile-nav-item" onclick="showSection('professional')" style="font-size: 13px;">🎓 Professional Data</div>
+                        <div class="profile-nav-item" onclick="showSection('security')" style="font-size: 13px;">🔒 Security Settings</div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="profile-main" style="background: #fff;">
+                    
+                    <!-- Personal Info Section -->
+                    <form method="POST" id="section-personal" class="profile-section">
+                        <input type="hidden" name="update_profile" value="1">
+                        <div class="form-section">
+                            <h3>Core Credentials</h3>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>Full Legal Name *</label>
+                                    <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($user['name']) ?>" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Mobile Intelligence *</label>
+                                    <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user['phone']) ?>" placeholder="+1 234 567 890">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Primary Access Email *</label>
+                                <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($user['email']) ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Brief Intelligence Bio</label>
+                                <textarea name="bio" class="form-control" placeholder="Write a short bio..."><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width: 100%; padding: 20px;">Synchronize Profile</button>
+                    </form>
+
+                    <!-- Professional Section -->
+                    <form method="POST" id="section-professional" class="profile-section" style="display:none;">
+                        <input type="hidden" name="update_profile" value="1">
+                        <input type="hidden" name="name" value="<?= htmlspecialchars($user['name']) ?>">
+                        <input type="hidden" name="email" value="<?= htmlspecialchars($user['email']) ?>">
+                        <input type="hidden" name="phone" value="<?= htmlspecialchars($user['phone']) ?>">
+                        <input type="hidden" name="bio" value="<?= htmlspecialchars($user['bio'] ?? '') ?>">
+
+                        <div class="form-section">
+                            <h3>Domain Expertise</h3>
+                            <div class="form-group">
+                                <label>Departmental Affiliation</label>
+                                <input type="text" name="department" class="form-control" value="<?= htmlspecialchars($user['department'] ?? '') ?>" placeholder="e.g., Cyber Security Department">
+                            </div>
+                            <div class="grid-2" style="margin-top: 30px;">
+                                <div class="form-group">
+                                    <label>Social Intelligence (LinkedIn)</label>
+                                    <input type="url" name="linkedin" class="form-control" value="<?= htmlspecialchars($socials['linkedin'] ?? '') ?>" placeholder="https://linkedin.com/in/...">
+                                </div>
+                                <div class="form-group">
+                                    <label>Professional Portfolio</label>
+                                    <input type="url" name="website" class="form-control" value="<?= htmlspecialchars($socials['website'] ?? '') ?>" placeholder="https://yourwork.com">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width: 100%; padding: 20px;">Update Professional Record</button>
+                    </form>
+
+                    <!-- Security Section -->
+                    <form method="POST" id="section-security" class="profile-section" style="display:none;">
+                        <input type="hidden" name="update_password" value="1">
+                        <div class="form-section">
+                            <h3>Access Protocols</h3>
+                            <div class="form-group">
+                                <label>Current Security Key</label>
+                                <input type="password" name="current_password" class="form-control" placeholder="••••••••" required>
+                            </div>
+                            <div class="grid-2" style="margin-top: 30px;">
+                                <div class="form-group">
+                                    <label>New Security Key</label>
+                                    <input type="password" name="new_password" class="form-control" placeholder="••••••••" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Verify New Key</label>
+                                    <input type="password" name="confirm_password" class="form-control" placeholder="••••••••" required>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width: 100%; padding: 20px; background: var(--grad-dark); box-shadow: var(--shadow-lg);">Rotate Security Keys</button>
+                    </form>
+
+                </div>
+            </div>
+        </main>
+
         <!-- Sidebar -->
-        <div class="profile-sidebar" style="background: rgba(248, 250, 252, 0.5); backdrop-filter: blur(5px);">
-            <div class="avatar-wrapper">
-                <?php if ($user['profile_pic']): ?>
-                    <img id="avatar-img" src="<?= BASE_URL ?>/uploads/profiles/<?= $user['profile_pic'] ?>" class="avatar-preview" style="border: 6px solid #fff; box-shadow: var(--shadow-lg);">
-                <?php else: ?>
-                    <div class="avatar-preview" style="background: var(--grad-primary); border: 6px solid #fff; box-shadow: var(--shadow-lg);"><?= strtoupper(substr($user['name'],0,1)) ?></div>
-                <?php endif; ?>
-                
-                <form id="pic-form" method="POST" enctype="multipart/form-data">
-                    <label class="upload-btn" style="background: var(--color-primary); box-shadow: var(--shadow-md);">
-                        📸
-                        <input type="file" name="profile_pic" hidden onchange="document.getElementById('pic-form').submit()">
-                    </label>
-                </form>
-            </div>
-            
-            <h2 style="font-size: 26px; font-weight: 800; letter-spacing: -1px; color: var(--color-text-main);"><?= htmlspecialchars($user['name']) ?></h2>
-            <div class="badge status-matched" style="margin-top: 10px; font-weight: 800;"><?= strtoupper($user['role']) ?></div>
-            
-            <div style="margin-top: 25px; background: #fff; padding: 20px; border-radius: var(--radius-xl); border: 1px solid rgba(0,0,0,0.03); text-align: left;">
-                <p style="color: var(--color-text-muted); font-size: 13px; line-height: 1.6; font-weight: 500;">
-                    <?= !empty($user['bio']) ? htmlspecialchars($user['bio']) : 'No bio added yet. Tell the campus about your role and expertise.' ?>
-                </p>
+        <aside>
+            <div class="sidebar-block" style="background: var(--grad-dark); border: none; color: #fff;">
+                <h3 style="color: #fff; margin-bottom: 20px;">Command Hub</h3>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a href="dashboard.php" style="background: rgba(255,255,255,0.08); padding: 15px 20px; border-radius: 12px; text-decoration: none; color: #fff; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: 600; font-size: 13px;">◄ Return to Dashboard</span>
+                    </a>
+                </div>
             </div>
 
-            <div class="profile-nav">
-                <div class="profile-nav-item active" onclick="showSection('personal')" style="font-size: 13px;">🛡️ Profile Metadata</div>
-                <div class="profile-nav-item" onclick="showSection('professional')" style="font-size: 13px;">🎓 Professional Data</div>
-                <div class="profile-nav-item" onclick="showSection('security')" style="font-size: 13px;">🔒 Security Settings</div>
+            <div class="glass-card" style="padding: 30px; text-align: center;">
+                <span style="font-size: 32px;">🆔</span>
+                <h5 style="margin-top: 15px; font-weight: 800;">Digital ID</h5>
+                <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">Your profile data verifies your ownership of claimed items.</p>
             </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="profile-main" style="background: #fff;">
-            
-            <!-- Personal Info Section -->
-            <form method="POST" id="section-personal" class="profile-section">
-                <input type="hidden" name="update_profile" value="1">
-                <div class="form-section">
-                    <h3>Core Credentials</h3>
-                    <div class="grid-2">
-                        <div class="form-group">
-                            <label>Full Legal Name *</label>
-                            <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($user['name']) ?>" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Mobile Intelligence *</label>
-                            <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user['phone']) ?>" placeholder="+1 234 567 890">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Primary Access Email *</label>
-                        <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($user['email']) ?>" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Brief Intelligence Bio</label>
-                        <textarea name="bio" class="form-control" placeholder="Write a short bio..."><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
-                    </div>
-                </div>
-                <button type="submit" class="btn-primary" style="width: 100%; padding: 20px;">Synchronize Profile</button>
-            </form>
-
-            <!-- Professional Section -->
-            <form method="POST" id="section-professional" class="profile-section" style="display:none;">
-                <input type="hidden" name="update_profile" value="1">
-                <input type="hidden" name="name" value="<?= htmlspecialchars($user['name']) ?>">
-                <input type="hidden" name="email" value="<?= htmlspecialchars($user['email']) ?>">
-                <input type="hidden" name="phone" value="<?= htmlspecialchars($user['phone']) ?>">
-                <input type="hidden" name="bio" value="<?= htmlspecialchars($user['bio'] ?? '') ?>">
-
-                <div class="form-section">
-                    <h3>Domain Expertise</h3>
-                    <div class="form-group">
-                        <label>Departmental Affiliation</label>
-                        <input type="text" name="department" class="form-control" value="<?= htmlspecialchars($user['department'] ?? '') ?>" placeholder="e.g., Cyber Security Department">
-                    </div>
-                    <div class="grid-2" style="margin-top: 30px;">
-                        <div class="form-group">
-                            <label>Social Intelligence (LinkedIn)</label>
-                            <input type="url" name="linkedin" class="form-control" value="<?= htmlspecialchars($socials['linkedin'] ?? '') ?>" placeholder="https://linkedin.com/in/...">
-                        </div>
-                        <div class="form-group">
-                            <label>Professional Portfolio</label>
-                            <input type="url" name="website" class="form-control" value="<?= htmlspecialchars($socials['website'] ?? '') ?>" placeholder="https://yourwork.com">
-                        </div>
-                    </div>
-                </div>
-                <button type="submit" class="btn-primary" style="width: 100%; padding: 20px;">Update Professional Record</button>
-            </form>
-
-            <!-- Security Section -->
-            <form method="POST" id="section-security" class="profile-section" style="display:none;">
-                <input type="hidden" name="update_password" value="1">
-                <div class="form-section">
-                    <h3>Access Protocols</h3>
-                    <div class="form-group">
-                        <label>Current Security Key</label>
-                        <input type="password" name="current_password" class="form-control" placeholder="••••••••" required>
-                    </div>
-                    <div class="grid-2" style="margin-top: 30px;">
-                        <div class="form-group">
-                            <label>New Security Key</label>
-                            <input type="password" name="new_password" class="form-control" placeholder="••••••••" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Verify New Key</label>
-                            <input type="password" name="confirm_password" class="form-control" placeholder="••••••••" required>
-                        </div>
-                    </div>
-                </div>
-                <button type="submit" class="btn-primary" style="width: 100%; padding: 20px; background: var(--grad-dark); box-shadow: var(--shadow-lg);">Rotate Security Keys</button>
-            </form>
-
-        </div>
+        </aside>
     </div>
 </div>
 
